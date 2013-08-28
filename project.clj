@@ -5,5 +5,4 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in-leiningen true
   :dependencies [[org.clojure/tools.namespace "0.2.4"]
-                 ;;[rhizome "0.1.9"]
-                 ])
+                 [rhizome "0.1.9"]])

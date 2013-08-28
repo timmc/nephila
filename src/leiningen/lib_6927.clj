@@ -1,7 +1,8 @@
 (ns leiningen.lib-6927
   (:require [clojure.set :as set]
             [clojure.tools.namespace.find :as ctn-find]
-            [clojure.tools.namespace.parse :as ctn-parse]))
+            [clojure.tools.namespace.parse :as ctn-parse]
+            [rhizome.viz :as viz]))
 
 (defn get-source-dirs
   [project]
@@ -27,15 +28,18 @@ found in the filesystem and the value sets are subsets of the keyset."
           (for [[name deps] untrimmed]
             [name (set/intersection restrict-to deps)]))))
 
+(defn save
+  [graph out-file]
+  (let [img (viz/graph->image (keys graph) graph
+                              :directed? true
+                              :vertical? true
+                              :node->descriptor (fn [n] {:label (name n)}))]
+    (viz/save-image img out-file)))
+
 (defn lib-6927
   "Show a graph of namespaces in this project."
-  [project & _]
-  (->> project
-       get-source-dirs
-       read-ns-decls
-       decls-to-graph
-       prn)
-  #_(let [src-dirs ()
-        decls ( src-dirs)
-        graph ( decls)]
-    (prn graph)))
+  [project out-file & _]
+  (let [src-dirs (get-source-dirs project)
+        decls (read-ns-decls src-dirs)
+        graph (decls-to-graph decls)]
+    (save graph out-file)))
