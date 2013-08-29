@@ -1,6 +1,6 @@
-(ns leiningen.lib-6927-test
+(ns leiningen.nephila-test
   (:use clojure.test
-        leiningen.lib-6927))
+        leiningen.nephila))
 
 (deftest pathtree
   (is (= (paths-to-tree [])

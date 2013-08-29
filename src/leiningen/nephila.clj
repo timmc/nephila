@@ -1,4 +1,4 @@
-(ns leiningen.lib-6927
+(ns leiningen.nephila
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.namespace.find :as ctn-find]
@@ -132,8 +132,8 @@ final segment.)"
                               :node->descriptor node-namer)]
     (viz/save-image img out-file)))
 
-(defn lib-6927
-  "Show a graph of namespaces in this project."
+(defn nephila
+  "Emit a graph of namespaces in this project to the specified file."
   [project out-file & _]
   (let [src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
