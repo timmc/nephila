@@ -5,6 +5,17 @@
             [clojure.tools.namespace.parse :as ctn-parse]
             [rhizome.viz :as viz]))
 
+;;;; Options
+
+(def default-opts
+  {:graph-orientation :horizontal})
+
+(defn get-opts
+  [project]
+  (merge default-opts (:nephila project)))
+
+(def graph-orientations #{:horizontal :vertical})
+
 ;;;; Computing the graph
 
 (defn get-source-dirs
@@ -122,20 +133,38 @@ final segment.)"
 
 ;;;; Output
 
+(defn random-colorer
+  [from to]
+  {:color (format "%.3f %.3f %.3f"
+                  (rand) 0.9 0.7)})
+
 (defn save
-  [graph out-file]
+  [graph out-file opts]
   (let [abbrs (abbreviation-map (keys graph))
         node-namer (fn [n] {:label (replace-prefix abbrs n)})
+        vert? (= (get graph-orientations
+                      (:graph-orientation opts)
+                      (:graph-orientation default-opts))
+                 :vertical)
         img (viz/graph->image (keys graph) graph
                               :directed? true
-                              :vertical? true
-                              :node->descriptor node-namer)]
+                              :vertical? vert?
+                              :options {"ranksep" "2.5"}
+                              :node->descriptor node-namer
+                              :edge->descriptor random-colorer)]
     (viz/save-image img out-file)))
 
+;;;; Task
+
 (defn nephila
-  "Emit a graph of namespaces in this project to the specified file."
+  "Emit a graph of namespaces in this project to the specified file.
+
+Options available from :nephila in project:
+
+- :graph-orientation can be :horizontal (default) or :vertical"
   [project out-file & _]
-  (let [src-dirs (get-source-dirs project)
+  (let [opts (get-opts project)
+        src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
         graph (decls-to-graph decls)]
-    (save graph out-file)))
+    (save graph out-file opts)))
