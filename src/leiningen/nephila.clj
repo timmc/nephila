@@ -35,7 +35,8 @@
   "Return the ns symbol for the namespace in the specified file."
   [f]
   (or (decl->ns-sym (ctn-file/read-file-ns-decl (io/file f)))
-      (throw (RuntimeException. (str "Could not read namespace for file: " f)))))
+      (binding [*out* *err*]
+        (println "Could not read namespace for file: " f))))
 
 (defn read-ns-decls
   "Read namespace declarations in the source dirs."
