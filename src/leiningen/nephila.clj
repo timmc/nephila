@@ -1,6 +1,8 @@
 (ns leiningen.nephila
   (:require [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.java.io :as io]
+            [clojure.tools.namespace.file :as ctn-file]
             [clojure.tools.namespace.find :as ctn-find]
             [clojure.tools.namespace.parse :as ctn-parse]
             [rhizome.viz :as viz]))
@@ -24,6 +26,17 @@
   ;;TODO
   [(java.io.File. "./src")])
 
+(defn decl->ns-sym
+  "Given a c.t.n decl, return the namespace symbol."
+  [decl]
+  (second decl))
+
+(defn ns-at-file
+  "Return the ns symbol for the namespace in the specified file."
+  [f]
+  (or (decl->ns-sym (ctn-file/read-file-ns-decl (io/file f)))
+      (throw (RuntimeException. (str "Could not read namespace for file: " f)))))
+
 (defn read-ns-decls
   "Read namespace declarations in the source dirs."
   [src-dirs]
@@ -32,15 +45,20 @@
 (defn decls-to-graph
   "From a coll of files and dirs, derive a map of namespace strings
 to sets of namespace strings, where the keyset is the set of namespaces
-found in the filesystem and the value sets are subsets of the keyset."
-  [decls]
+found in the filesystem and the value sets are subsets of the keyset.
+Optionally, restrict graph further to the symbols in `further-restrict`."
+  [decls further-restrict]
   (let [untrimmed (for [decl decls
-                        :let [sym (second decl)
+                        :let [sym (decl->ns-sym decl)
                               deps (ctn-parse/deps-from-ns-decl decl)]]
                     [sym deps])
-        restrict-to (set (map first untrimmed))]
+        own-nses (set (map first untrimmed))
+        restrict-to (if further-restrict
+                      (set/intersection own-nses (set further-restrict))
+                      own-nses)]
     (into {}
-          (for [[sym deps] untrimmed]
+          (for [[sym deps] untrimmed
+                :when (contains? restrict-to sym)]
             [(name sym) (map name (set/intersection restrict-to deps))]))))
 
 ;;;; Path abbreviating
@@ -157,19 +175,44 @@ final segment.)"
 
 ;;;; Task
 
+(defn compute-ns-restrict
+  "Use the opts map to compute the set of namespace symbols to restrict graph to."
+  [opts]
+  (when-let [only (:only opts)]
+    (set (for [spec only]
+           (cond
+            (symbol? spec) spec
+            ;; Not very graceful, but it works. (Wouldn't it
+            ;; be nicer to just filter when reading the source
+            ;; dirs in the first place?)
+            (string? spec) (ns-at-file spec)
+            :else (throw (RuntimeException. (str "Unrecognized :only member: "
+                                                 (pr-str spec)))))))))
+
 (defn nephila
   "Emit a graph of namespaces in this project to the specified file.
 
-Options available from :nephila in project:
+Command line arguments:
 
-- :graph-orientation can be :horizontal (default) or :vertical"
-  [project out-file & [opts-str]]
-  (let [cli-opts (if opts-str
+- output file path (mandatory)
+- options map (optional), possibly spread over multiple arguments (will be
+  stitched back together with spaces before reading)
+
+Options will be merged from defaults, then :nephila key in project map, then
+command-line options map.
+
+Options:
+
+- :graph-orientation can be :horizontal (default) or :vertical
+- :only can be a coll of namespace names (as symbols) and paths (as strings)
+  to limit graph to. Use nil to override a previous restriction."
+  [project out-file & opts-strs]
+  (let [cli-opts (if opts-strs
                    (binding [*read-eval* false]
-                     (read-string opts-str))
+                     (read-string (str/join " " opts-strs)))
                    {})
         opts (get-opts project cli-opts)
         src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
-        graph (decls-to-graph decls)]
+        graph (decls-to-graph decls (compute-ns-restrict opts))]
     (save graph out-file opts)))
