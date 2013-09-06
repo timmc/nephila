@@ -1,5 +1,9 @@
 # nephila
 
+<img src="https://github.com/timmc/nephila/raw/master/doc/samples/cassaforte.png"
+ alt="Example graph" title="clojurewerkz/cassaforte namespace graph"
+ align="right" />
+
 A nascent Leiningen plugin to show a graph of your namespaces.
 
 ## Usage
