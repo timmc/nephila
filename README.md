@@ -22,7 +22,8 @@ and then open output.png in your image viewer of choice.
 
 * Take options from project map and optional command line argument
 * Option added: :graph-orientation
-* Option added: :only for restricting set of nodes in graph
+* Option added: :only for restricting set of nodes in graph (symbols
+  and path strings)
 
 ### v0.1.0
 

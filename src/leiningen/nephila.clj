@@ -1,6 +1,8 @@
 (ns leiningen.nephila
   (:require [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.java.io :as io]
+            [clojure.tools.namespace.file :as ctn-file]
             [clojure.tools.namespace.find :as ctn-find]
             [clojure.tools.namespace.parse :as ctn-parse]
             [rhizome.viz :as viz]))
@@ -24,6 +26,17 @@
   ;;TODO
   [(java.io.File. "./src")])
 
+(defn decl->ns-sym
+  "Given a c.t.n decl, return the namespace symbol."
+  [decl]
+  (second decl))
+
+(defn ns-at-file
+  "Return the ns symbol for the namespace in the specified file."
+  [f]
+  (or (decl->ns-sym (ctn-file/read-file-ns-decl (io/file f)))
+      (throw (RuntimeException. (str "Could not read namespace for file: " f)))))
+
 (defn read-ns-decls
   "Read namespace declarations in the source dirs."
   [src-dirs]
@@ -36,7 +49,7 @@ found in the filesystem and the value sets are subsets of the keyset.
 Optionally, restrict graph further to the symbols in `further-restrict`."
   [decls further-restrict]
   (let [untrimmed (for [decl decls
-                        :let [sym (second decl)
+                        :let [sym (decl->ns-sym decl)
                               deps (ctn-parse/deps-from-ns-decl decl)]]
                     [sym deps])
         own-nses (set (map first untrimmed))
@@ -162,14 +175,28 @@ final segment.)"
 
 ;;;; Task
 
+(defn compute-ns-restrict
+  "Use the opts map to compute the set of namespace symbols to restrict graph to."
+  [opts]
+  (when-let [only (:only opts)]
+    (set (for [spec only]
+           (cond
+            (symbol? spec) spec
+            ;; Not very graceful, but it works. (Wouldn't it
+            ;; be nicer to just filter when reading the source
+            ;; dirs in the first place?)
+            (string? spec) (ns-at-file spec)
+            :else (throw (RuntimeException. (str "Unrecognized :only member: "
+                                                 (pr-str spec)))))))))
+
 (defn nephila
   "Emit a graph of namespaces in this project to the specified file.
 
 Options available from :nephila in project:
 
 - :graph-orientation can be :horizontal (default) or :vertical
-- :only can be a coll of namespace symbols to limit graph to. Use nil to
-  override a previous restriction."
+- :only can be a coll of namespace names (as symbols) and paths (as strings)
+  to limit graph to. Use nil to override a previous restriction."
   [project out-file & [opts-str]]
   (let [cli-opts (if opts-str
                    (binding [*read-eval* false]
@@ -178,5 +205,5 @@ Options available from :nephila in project:
         opts (get-opts project cli-opts)
         src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
-        graph (decls-to-graph decls (:only opts))]
+        graph (decls-to-graph decls (compute-ns-restrict opts))]
     (save graph out-file opts)))
