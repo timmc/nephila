@@ -16,6 +16,18 @@ Then you can run this in any project:
 
 and then open output.png in your image viewer of choice.
 
+See `lein help nephila` for options. (View it online at end of
+[nephila.clj][rel-neph].)
+
+[rel-neph]:https://github.com/timmc/nephila/blob/release/src/leiningen/nephila.clj
+
+## Tips and tricks
+
+* The sample [graph-diff.sh][rel-diff] script uses nephila to show
+  just the subgraph containing namespaces changed on a git branch.
+
+[rel-diff]:https://github.com/timmc/nephila/blob/release/doc/samples/graph-diff.sh
+
 ## Changelog
 
 ### >= v0.2.0
@@ -24,6 +36,8 @@ and then open output.png in your image viewer of choice.
 * Option added: :graph-orientation
 * Option added: :only for restricting set of nodes in graph (symbols
   and path strings)
+* Graph has random coloring for edges (makes intersections more readable)
+* Graph has wider spacing
 
 ### v0.1.0
 
