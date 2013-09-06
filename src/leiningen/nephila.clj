@@ -32,15 +32,20 @@
 (defn decls-to-graph
   "From a coll of files and dirs, derive a map of namespace strings
 to sets of namespace strings, where the keyset is the set of namespaces
-found in the filesystem and the value sets are subsets of the keyset."
-  [decls]
+found in the filesystem and the value sets are subsets of the keyset.
+Optionally, restrict graph further to the symbols in `further-restrict`."
+  [decls further-restrict]
   (let [untrimmed (for [decl decls
                         :let [sym (second decl)
                               deps (ctn-parse/deps-from-ns-decl decl)]]
                     [sym deps])
-        restrict-to (set (map first untrimmed))]
+        own-nses (set (map first untrimmed))
+        restrict-to (if further-restrict
+                      (set/intersection own-nses (set further-restrict))
+                      own-nses)]
     (into {}
-          (for [[sym deps] untrimmed]
+          (for [[sym deps] untrimmed
+                :when (contains? restrict-to sym)]
             [(name sym) (map name (set/intersection restrict-to deps))]))))
 
 ;;;; Path abbreviating
@@ -162,7 +167,9 @@ final segment.)"
 
 Options available from :nephila in project:
 
-- :graph-orientation can be :horizontal (default) or :vertical"
+- :graph-orientation can be :horizontal (default) or :vertical
+- :only can be a coll of namespace symbols to limit graph to. Use nil to
+  override a previous restriction."
   [project out-file & [opts-str]]
   (let [cli-opts (if opts-str
                    (binding [*read-eval* false]
@@ -171,5 +178,5 @@ Options available from :nephila in project:
         opts (get-opts project cli-opts)
         src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
-        graph (decls-to-graph decls)]
+        graph (decls-to-graph decls (:only opts))]
     (save graph out-file opts)))
