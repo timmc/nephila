@@ -20,7 +20,8 @@ and then open output.png in your image viewer of choice.
 
 ### >= v0.2.0
 
-* Accept optional second argument: Options map.
+* Take options from project map and optional command line argument
+* Option added: :graph-orientation
 
 ### v0.1.0
 
