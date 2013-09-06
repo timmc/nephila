@@ -11,8 +11,9 @@
   {:graph-orientation :horizontal})
 
 (defn get-opts
-  [project]
-  (merge default-opts (:nephila project)))
+  "Compute options from the project map and optional command-line options."
+  [project cli-opts]
+  (merge default-opts (:nephila project) cli-opts))
 
 (def graph-orientations #{:horizontal :vertical})
 
@@ -162,8 +163,12 @@ final segment.)"
 Options available from :nephila in project:
 
 - :graph-orientation can be :horizontal (default) or :vertical"
-  [project out-file & _]
-  (let [opts (get-opts project)
+  [project out-file & [opts-str]]
+  (let [cli-opts (if opts-str
+                   (binding [*read-eval* false]
+                     (read-string opts-str))
+                   {})
+        opts (get-opts project cli-opts)
         src-dirs (get-source-dirs project)
         decls (read-ns-decls src-dirs)
         graph (decls-to-graph decls)]

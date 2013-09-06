@@ -16,6 +16,16 @@ Then you can run this in any project:
 
 and then open output.png in your image viewer of choice.
 
+## Changelog
+
+### >= v0.2.0
+
+* Accept optional second argument: Options map.
+
+### v0.1.0
+
+* Basic functionality: Read src/, output graph to named file.
+
 ## License
 
 Copyright © 2013 Tim McCormack
