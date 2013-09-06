@@ -192,15 +192,24 @@ final segment.)"
 (defn nephila
   "Emit a graph of namespaces in this project to the specified file.
 
-Options available from :nephila in project:
+Command line arguments:
+
+- output file path (mandatory)
+- options map (optional), possibly spread over multiple arguments (will be
+  stitched back together with spaces before reading)
+
+Options will be merged from defaults, then :nephila key in project map, then
+command-line options map.
+
+Options:
 
 - :graph-orientation can be :horizontal (default) or :vertical
 - :only can be a coll of namespace names (as symbols) and paths (as strings)
   to limit graph to. Use nil to override a previous restriction."
-  [project out-file & [opts-str]]
-  (let [cli-opts (if opts-str
+  [project out-file & opts-strs]
+  (let [cli-opts (if opts-strs
                    (binding [*read-eval* false]
-                     (read-string opts-str))
+                     (read-string (str/join " " opts-strs)))
                    {})
         opts (get-opts project cli-opts)
         src-dirs (get-source-dirs project)
