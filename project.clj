@@ -1,4 +1,4 @@
-(defproject org.timmc/nephila "0.3.0-SNAPSHOT"
+(defproject org.timmc/nephila "0.3.0"
   :description "Nascent project for visualizing Clojure project structure"
   :url "https://github.com/timmc/nephila"
   :eval-in-leiningen true
