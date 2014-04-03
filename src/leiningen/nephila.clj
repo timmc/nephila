@@ -10,7 +10,8 @@
 ;;;; Options
 
 (def default-opts
-  {:graph-orientation :horizontal})
+  {:graph-orientation :horizontal
+   :rank-sep "2.5"})
 
 (defn get-opts
   "Compute options from the project map and optional command-line options."
@@ -166,10 +167,11 @@ final segment.)"
                       (:graph-orientation opts)
                       (:graph-orientation default-opts))
                  :vertical)
+        rank-sep (get opts :rank-sep (:rank-sep default-opts))
         img (viz/graph->image (keys graph) graph
                               :directed? true
                               :vertical? vert?
-                              :options {"ranksep" "2.5"}
+                              :options {"ranksep" rank-sep}
                               :node->descriptor node-namer
                               :edge->descriptor random-colorer)]
     (viz/save-image img out-file)))

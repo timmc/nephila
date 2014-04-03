@@ -34,6 +34,11 @@ See `lein help nephila` for options. (View it online at end of
 
 ## Changelog
 
+### v0.3.0
+
+* Add :rank-sep to options, defaulting to `"2.5"`, for distance
+  between nodes of different levels.
+
 ### v0.2.0
 
 * Take options from project map and optional command line argument
