@@ -154,15 +154,30 @@ final segment.)"
 
 ;;;; Output
 
+(defn color-from-hsv
+  [hue saturation value]
+  (format "%.3f, %.3f, %.3f"
+          hue saturation value))
+
 (defn random-colorer
   [from to]
-  {:color (format "%.3f %.3f %.3f"
-                  (rand) 0.9 0.7)})
+  {:color (color-from-hsv (rand) 0.9 0.7)})
+
+(defn bgcolor-by-name-prefix
+  "Given a node's name string, deterministically generate a pastel color."
+  [node-name]
+  (let [prefix (str/replace node-name #"(.*)\..*" "$1")
+        rand (hash prefix)
+        in-range (/ (mod rand 1000) 1000.)]
+    (color-from-hsv in-range 0.2 0.9)))
 
 (defn save
   [graph out-file opts]
   (let [abbrs (abbreviation-map (keys graph))
-        node-namer (fn [n] {:label (replace-prefix abbrs n)})
+        node-namer (fn [n] {:label (replace-prefix abbrs n)
+                            :style "filled"
+                            ;; TODO: Color by prefix's position in tree.
+                            :fillcolor (bgcolor-by-name-prefix n)})
         vert? (= (get graph-orientations
                       (:graph-orientation opts)
                       (:graph-orientation default-opts))
