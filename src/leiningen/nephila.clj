@@ -171,6 +171,11 @@ final segment.)"
         in-range (/ (mod rand 1000) 1000.)]
     (color-from-hsv in-range 0.2 0.9)))
 
+(defn node-clusterer
+  "Cluster node based on directory."
+  [node]
+  (.replaceFirst node "((\\.?[^.]+)+)\\..*" "$1"))
+
 (defn save
   [graph out-file opts]
   (let [abbrs (abbreviation-map (keys graph))
@@ -188,6 +193,7 @@ final segment.)"
                               :vertical? vert?
                               :options {"ranksep" rank-sep}
                               :node->descriptor node-namer
+                              :node->cluster node-clusterer
                               :edge->descriptor random-colorer)]
     (viz/save-image img out-file)))
 
