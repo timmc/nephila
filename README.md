@@ -54,6 +54,8 @@ See `lein help nephila` for options. (View it online at end of
 
 ## License
 
-Copyright © 2013 Tim McCormack
+Copyright © 2013–2016 Tim McCormack and his employer, Brightcove (see
+commit emails to distinguish.)
 
-Free license pending release by employer.
+Distributed under the Eclipse Public License either version 1.0 or (at
+your option) any later version.
