@@ -69,7 +69,8 @@ Optionally, restrict graph further to the symbols in `further-restrict`."
 ;; Path-strings are dot-delimited paths.
 
 (defn paths-to-tree
-  "Build a tree out of paths. Each level is a map with keys as path segments and values as maps of :down to subtree."
+  "Build a tree out of paths. Each level is a map with keys as path
+segments and values as maps of :down to subtree."
   [paths]
   (into {}
         (for [[k vs] (group-by first (filter #(pos? (count %)) paths))
@@ -179,8 +180,8 @@ final segment.)"
 ;;;; Task
 
 (defn compute-ns-restrict
-  "Use the opts map to compute the set of namespace symbols to restrict graph to."
-  [opts]
+  "Use the opts map to compute the set of namespace symbols to
+  restrict graph to."  [opts]
   (when-let [only (:only opts)]
     (set (for [spec only]
            (cond

@@ -1,23 +1,23 @@
 (ns leiningen.nephila-test
-  (:use clojure.test
-        leiningen.nephila))
+  (:use clojure.test)
+  (:require [leiningen.nephila :as n]))
 
 (deftest pathtree
-  (is (= (paths-to-tree [])
+  (is (= (n/paths-to-tree [])
          {}))
-  (is (= (paths-to-tree [["core"]])
+  (is (= (n/paths-to-tree [["core"]])
          {"core" {:down {}}}))
-  (is (= (paths-to-tree [["core" "foo" "bar"]])
+  (is (= (n/paths-to-tree [["core" "foo" "bar"]])
          {"core" {:down {"foo" {:down {"bar" {:down {}}}}}}}))
-  (is (= (paths-to-tree [["core" "foo"] ["core" "bar"] ["core" "baz"]
-                         ["core" "foo" "quux"] ["other" "root"]])
+  (is (= (n/paths-to-tree [["core" "foo"] ["core" "bar"] ["core" "baz"]
+                           ["core" "foo" "quux"] ["other" "root"]])
          {"core" {:down {"foo" {:down {"quux" {:down {}}}}
                          "bar" {:down {}}
                          "baz" {:down {}}}}
           "other" {:down {"root" {:down {}}}}})))
 
 (deftest add-abbrevs
-  (let [subject #(add-tree-abbrevs % abbreviator)]
+  (let [subject #(n/add-tree-abbrevs % n/abbreviator)]
     (is (= (subject {})
            {}))
     (is (= (subject {"core" {:down {}}})
@@ -37,17 +37,17 @@
                      :abbrev "o"}}))))
 
 (deftest abbrev-level
-  (is (= (abbreviator []) {}))
-  (is (= (abbreviator ["foo"]) {"foo" "f"}))
-  (is (= (abbreviator ["bar" "baz"])
+  (is (= (n/abbreviator []) {}))
+  (is (= (n/abbreviator ["foo"]) {"foo" "f"}))
+  (is (= (n/abbreviator ["bar" "baz"])
          {"bar" "bar", "baz" "baz"}))
-  (is (= (abbreviator ["foo" "bar" "baz"])
+  (is (= (n/abbreviator ["foo" "bar" "baz"])
          {"foo" "f", "bar" "bar", "baz" "baz"}))
-  (is (= (abbreviator ["q" "quux" "nuux"])
+  (is (= (n/abbreviator ["q" "quux" "nuux"])
          {"q" "q", "quux" "quux", "nuux" "n"})))
 
 (deftest tree-to-path-mapping
-  (let [subject tree->abbrev-map]
+  (let [subject n/tree->abbrev-map]
     (is (= (subject {})
            {}))
     (is (= (subject {"core" {:down {} :abbrev "c"}})
@@ -70,15 +70,16 @@
             ["other" "root"] ["o" "r"]}))))
 
 (deftest prefix-replacement
-  (is (= (replace-prefix {} "foo.bar") "foo.bar"))
-  (is (= (replace-prefix {"foo.bar" "no"} "foo.bar") "foo.bar"))
-  (is (= (replace-prefix {"foo" "yes"} "foo.bar") "yes.bar"))
-  (is (= (replace-prefix {"foo" "no"} "foo") "foo"))
-  (is (= (replace-prefix {"foo.bar" "no", "foo" "yes"} "foo.bar") "yes.bar")))
+  (is (= (n/replace-prefix {} "foo.bar") "foo.bar"))
+  (is (= (n/replace-prefix {"foo.bar" "no"} "foo.bar") "foo.bar"))
+  (is (= (n/replace-prefix {"foo" "yes"} "foo.bar") "yes.bar"))
+  (is (= (n/replace-prefix {"foo" "no"} "foo") "foo"))
+  (is (= (n/replace-prefix {"foo.bar" "no", "foo" "yes"} "foo.bar")
+         "yes.bar")))
 
 (deftest abbrev
-  (is (= (abbreviation-map ["core.foo" "core.bar" "core.baz"
-                            "core.foo.quux"])
+  (is (= (n/abbreviation-map ["core.foo" "core.bar" "core.baz"
+                              "core.foo.quux"])
          {"core" "c"
           "core.foo" "c.f"
           "core.bar" "c.bar"
